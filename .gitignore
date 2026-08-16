@@ -71,3 +71,12 @@ dist/
 # Flask
 # ==============================
 instance/
+
+# Large datasets
+notebook/final_resume_dataset.csv
+final_infosys/notebook/final_resume_dataset.csv
+
+# Unrelated file
+1NPDPRO5.DOC
+
+app.zip
