@@ -113,7 +113,77 @@ AI-Career-Intelligence-Platform/
 │
 ├── requirements.txt
 └── README.md
-```
+
+---
+
+# 🚀 Milestone 2 — Advanced Machine Learning & Career Ranking
+
+In Milestone 2, the baseline career recommendation system was enhanced using advanced ensemble Machine Learning models and semantic text representations to improve prediction performance and career recommendation quality.
+
+## 🧠 Advanced Models
+
+The following Machine Learning models were implemented and evaluated:
+
+- 🌲 Random Forest Classifier
+- ⚡ XGBoost Classifier
+- 🧠 Sentence-BERT (SBERT) embeddings
+- 🔧 Hyperparameter tuning
+- 🔄 Cross-validation
+- 📊 Accuracy and classification metrics
+- 🎯 Top-K career recommendation
+
+## 📊 Milestone 2 Model Performance
+
+| Model | Accuracy |
+|------|----------|
+| Logistic Regression | **95.51%** |
+| Random Forest | **96%** |
+| XGBoost | **94%** |
+
+### 🌲 Random Forest
+
+The Random Forest classifier was optimized using hyperparameter tuning and cross-validation to improve generalization and reduce overfitting.
+
+**Achieved Accuracy: 96%**
+
+### ⚡ XGBoost
+
+XGBoost was implemented as an advanced gradient boosting classifier for career-role prediction.
+
+**Achieved Accuracy: 94%**
+
+## 🧠 Sentence-BERT Skill Embeddings
+
+Sentence-BERT was integrated to capture the semantic relationship between resume content, skills, and career roles.
+
+**Model Used:**
+
+`sentence-transformers/all-MiniLM-L6-v2`
+
+SBERT converts resume and skill information into dense numerical embeddings, allowing the system to understand semantic similarity beyond simple keyword matching.
+
+## ⚙️ Milestone 2 Pipeline
+
+```text
+Resume Dataset
+       ↓
+Data Cleaning & Preprocessing
+       ↓
+Resume Text & Skill Processing
+       ↓
+TF-IDF / SBERT Feature Representation
+       ↓
+Feature Engineering
+       ↓
+Hyperparameter Tuning
+       ↓
+Random Forest / XGBoost
+       ↓
+Career Role Prediction
+       ↓
+Confidence Score
+       ↓
+Top-K Career Recommendations
 
 ## 🎯 Applications
 
