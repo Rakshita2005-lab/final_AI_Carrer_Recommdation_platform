@@ -13,8 +13,6 @@ The AI-Powered Career Intelligence Platform helps students, fresh graduates, and
 - 🤖 AI-based career role prediction
 - 📊 Confidence score generation
 - 🎯 Personalized career recommendations
-  
- ---
  
 # 🧠 Machine Learning Performance
 
@@ -206,5 +204,5 @@ Top-K Career Recommendations
 
 **Rakshita Handage**
 
-Computer Science Engineering Student
+-- Just Explore the skills
 
