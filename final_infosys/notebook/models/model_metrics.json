@@ -1,0 +1,12 @@
+{
+    "Random Forest": {
+        "training_accuracy": 0.9663,
+        "testing_accuracy": 0.9247,
+        "balanced_accuracy": 0.864
+    },
+    "XGBoost": {
+        "training_accuracy": 0.9487,
+        "testing_accuracy": 0.9307,
+        "balanced_accuracy": 0.8533
+    }
+}

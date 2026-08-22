@@ -79,4 +79,10 @@ final_infosys/notebook/final_resume_dataset.csv
 # Unrelated file
 1NPDPRO5.DOC
 
-app.zip
+# Large ML model files
+*.pkl
+*.npy
+
+# Python virtual environment
+.venv/
+__pycache__/

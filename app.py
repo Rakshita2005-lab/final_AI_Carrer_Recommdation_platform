@@ -7,6 +7,7 @@ import re
 import os
 import json
 import traceback
+import difflib
 
 # ==========================================================
 # Flask App
@@ -335,7 +336,6 @@ METRICS_PATH = os.path.join(MODEL_DIR, "model_metrics.json")
 # We flatten each model down to ONE representative score here, preferring
 # testing_accuracy (or balanced_accuracy as a fallback) since that's the
 # most meaningful "how good is this model on unseen résumés" number.
-# PREFERRED_METRIC_KEYS = ["testing_accuracy", "balanced_accuracy", "training_accuracy", "f1", "macro_f1", "accuracy"]
 PREFERRED_METRIC_KEYS = [
     "macro_f1",
     "f1",
@@ -379,38 +379,93 @@ else:
 # ==========================================================
 
 SKILLS = [
-    # Languages
-    "python", "java", "c", "c++", "sql", "r",
-    # Web Technologies
-    "html", "css", "javascript", "typescript",
-    # Frontend
-    "react", "angular", "vue",
-    # Backend
-    "nodejs", "express", "flask", "django", "fastapi",
-    "spring", "spring boot", ".net", "junit",
-    # Databases
+    # ---------------- Languages ----------------
+    "python", "java", "c", "c++", "c#", "sql", "r", "go", "golang",
+    "rust", "kotlin", "swift", "php", "ruby", "scala", "matlab",
+    "perl", "dart", "objective-c", "shell scripting", "bash",
+    "powershell", "vba",
+
+    # ---------------- Web Technologies ----------------
+    "html", "html5", "css", "css3", "javascript", "typescript",
+    "sass", "less", "bootstrap", "tailwind", "tailwind css",
+    "material ui", "webpack", "babel", "jquery",
+
+    # ---------------- Frontend Frameworks ----------------
+    "react", "react.js", "angular", "vue", "vue.js", "next.js",
+    "nuxt.js", "svelte", "redux", "ember.js",
+
+    # ---------------- Backend Frameworks ----------------
+    "nodejs", "node.js", "express", "express.js", "flask", "django",
+    "fastapi", "spring", "spring boot", ".net", "asp.net", "junit",
+    "laravel", "ruby on rails", "nestjs", "graphql", "grpc",
+    "hibernate", "maven", "gradle", "jpa",
+
+    # ---------------- Mobile Development ----------------
+    "android", "ios", "flutter", "react native", "xamarin",
+    "swiftui", "jetpack compose",
+
+    # ---------------- Databases ----------------
     "mysql", "postgresql", "oracle", "oracle sql", "mongodb",
-    # Cloud & DevOps
-    "aws", "azure", "gcp", "docker", "kubernetes",
-    # Version Control & Tools
+    "redis", "cassandra", "dynamodb", "sqlite", "mariadb",
+    "firebase", "elasticsearch", "neo4j", "supabase",
+
+    # ---------------- Cloud & DevOps ----------------
+    "aws", "azure", "gcp", "google cloud", "docker", "kubernetes",
+    "terraform", "ansible", "jenkins", "ci/cd", "gitlab",
+    "gitlab ci", "bitbucket", "heroku", "vercel", "netlify",
+    "microservices", "linux", "nginx", "apache",
+
+    # ---------------- Version Control & Tools ----------------
     "git", "github", "jira", "postman", "vs code", "intellij idea",
     "jupyter notebook", "google colab", "mlflow", "google sheets",
-    "google data studio",
-    # Machine Learning
+    "google data studio", "figma", "adobe xd", "confluence", "trello",
+
+    # ---------------- Testing ----------------
+    "selenium", "cypress", "jest", "mocha", "pytest", "unit testing",
+    "api testing", "test automation", "junit", "postman",
+
+    # ---------------- Machine Learning & AI ----------------
     "machine learning", "deep learning", "tensorflow", "keras",
-    "scikit-learn", "xgboost", "opencv", "nlp",
-    # Data Analysis
+    "pytorch", "scikit-learn", "xgboost", "opencv", "nlp",
+    "computer vision", "hugging face", "transformers", "langchain",
+    "openai api", "llm", "generative ai", "cnn", "rnn", "lstm",
+    "bert", "spark", "pyspark", "hadoop", "airflow", "reinforcement learning",
+
+    # ---------------- Data Analysis & Visualization ----------------
     "pandas", "numpy", "scipy", "matplotlib", "seaborn", "power bi",
     "tableau", "excel", "pivot tables", "vlookup", "power query", "dax",
-    # Concepts
+    "plotly", "d3.js", "looker", "google analytics",
+
+    # ---------------- Concepts ----------------
     "statistics", "probability", "feature engineering", "model evaluation",
     "supervised learning", "unsupervised learning", "a/b testing",
     "data cleaning", "descriptive statistics", "dashboarding",
     "kpi reporting", "oop", "object oriented programming",
     "data structures", "algorithms", "data structures and algorithms",
-    "sdlc", "design patterns", "agile", "scrum",
-    # Others
-    "rest api", "streamlit"
+    "sdlc", "design patterns", "agile", "scrum", "kanban",
+    "system design", "distributed systems", "data warehousing",
+    "etl", "data modeling",
+
+    # ---------------- Security / Blockchain ----------------
+    "cybersecurity", "penetration testing", "ethical hacking",
+    "blockchain", "solidity", "web3", "cryptography",
+
+    # ---------------- Soft Skills ----------------
+    "communication", "leadership", "teamwork", "problem solving",
+    "time management", "critical thinking", "project management",
+    "collaboration", "adaptability", "presentation skills",
+
+    # ---------------- Project & Program Management ----------------
+    "risk management", "stakeholder management", "waterfall",
+    "ms project", "microsoft project", "team management",
+    "conflict resolution", "vendor management", "resource allocation",
+    "budgeting", "cost management", "quality management",
+    "change management", "sprint planning", "user stories",
+    "roadmap planning", "product roadmap", "gantt chart", "okrs",
+    "requirements gathering", "status reporting", "trello", "confluence",
+
+    # ---------------- Others ----------------
+    "rest api", "streamlit", "ui/ux", "responsive design", "seo"
 ]
 
 # ==========================================================
@@ -432,6 +487,287 @@ ROLE_TITLES = [
     "research assistant", "teaching assistant", "consultant", "analyst",
     "intern"
 ]
+
+# ==========================================================
+# Skill → Role mapping (used by /gap-report)
+# ==========================================================
+# ⚠️ IMPORTANT: these dict keys must exactly match the role names your
+# model actually predicts — i.e. the values in label_encoder.classes_.
+# Run `print(label_encoder.classes_)` once and adjust the keys below
+# to match exactly (including casing), or /gap-report will 404 for
+# any predicted role that isn't listed here.
+#
+# Skill names use .title() casing to match what extract_skills() below
+# produces (e.g. "rest api" -> "Rest Api"), so alignment percentages
+# come out correct instead of showing every skill as "missing".
+
+ROLE_SKILLS = {
+    "Full Stack Developer": [
+        "Html", "Css", "Javascript", "React", "Node.Js", "Python", "Sql",
+        "Rest Api", "Git", "Mongodb"
+    ],
+    "Java Developer": [
+        "Java", "Oop", "Sql", "Spring Boot", "Spring", "Hibernate",
+        "Maven", "Git", "Rest Api", "Junit"
+    ],
+    "Full Stack Java Developer": [
+        "Java", "Spring Boot", "Spring", "Hibernate", "Maven", "Html",
+        "Css", "Javascript", "React", "Sql", "Mysql", "Rest Api", "Git", "Oop"
+    ],
+    "Python Developer": [
+        "Python", "Oop", "Sql", "Git", "Rest Api", "Flask", "Fastapi",
+        "Django", "Pytest"
+    ],
+    "Frontend Developer": [
+        "Html", "Css", "Javascript", "Typescript", "React", "Angular",
+        "Vue", "Tailwind Css", "Git", "Responsive Design"
+    ],
+    "Backend Developer": [
+        "Python", "Java", "Node.Js", "Sql", "Rest Api", "Graphql", "Git",
+        "Docker", "Mongodb", "Microservices"
+    ],
+    "Web Developer": [
+        "Html", "Css", "Javascript", "React", "Node.Js", "Git",
+        "Responsive Design", "Bootstrap", "Rest Api"
+    ],
+    "Mobile Developer": [
+        "Kotlin", "Swift", "Flutter", "React Native", "Android", "Ios", "Git"
+    ],
+    "Data Scientist": [
+        "Python", "Sql", "Machine Learning", "Pandas", "Numpy",
+        "Scikit-Learn", "Statistics", "Matplotlib", "Deep Learning"
+    ],
+    "Data Analyst": [
+        "Sql", "Excel", "Power Bi", "Tableau", "Statistics",
+        "Data Cleaning", "Pandas", "Python", "Plotly"
+    ],
+    "Data Engineer": [
+        "Python", "Sql", "Docker", "Aws", "Mongodb", "Mysql",
+        "Postgresql", "Spark", "Airflow", "Etl"
+    ],
+    "Machine Learning Engineer": [
+        "Python", "Machine Learning", "Deep Learning", "Tensorflow",
+        "Pytorch", "Keras", "Sql", "Docker", "Mlflow"
+    ],
+    "Ai Engineer": [
+        "Python", "Machine Learning", "Deep Learning", "Tensorflow",
+        "Pytorch", "Nlp", "Opencv", "Transformers", "Llm"
+    ],
+    "Software Engineer": [
+        "Java", "Python", "C++", "Data Structures", "Algorithms", "Git",
+        "Oop", "System Design"
+    ],
+    "Software Developer": [
+        "Java", "Python", "Sql", "Git", "Oop", "Data Structures",
+        "Design Patterns"
+    ],
+    "Business Analyst": [
+        "Sql", "Excel", "Power Bi", "Tableau", "Statistics", "Data Cleaning"
+    ],
+    "Business Intelligence Analyst": [
+        "Sql", "Power Bi", "Tableau", "Excel", "Dax", "Power Query"
+    ],
+    "Quantitative Analyst": [
+        "Python", "Sql", "Statistics", "Probability", "Excel"
+    ],
+    "Product Manager": [
+        "Agile", "Scrum", "Jira", "Sql", "Excel", "Project Management"
+    ],
+    "Project Manager": [
+        "Agile", "Scrum", "Jira", "Sdlc", "Project Management",
+        "Communication", "Leadership", "Risk Management","Java Core", "Swing",
+        "Stakeholder Management", "Team Management", "Waterfall",
+        "Sprint Planning", "Budgeting", "Change Management",
+        "Conflict Resolution", "Trello", "Confluence",
+        "Requirements Gathering", "Status Reporting"
+    ],
+    "Program Manager": [
+        "Agile", "Scrum", "Jira", "Sdlc", "Excel", "Leadership"
+    ],
+    "Devops Engineer": [
+        "Docker", "Kubernetes", "Aws", "Azure", "Terraform", "Ansible",
+        "Jenkins", "Ci/Cd", "Git", "Linux"
+    ],
+    "Cloud Engineer": [
+        "Aws", "Azure", "Gcp", "Docker", "Kubernetes", "Terraform", "Linux"
+    ],
+    "Site Reliability Engineer": [
+        "Docker", "Kubernetes", "Aws", "Azure", "Git", "Linux", "Ci/Cd"
+    ],
+    "Qa Engineer": [
+        "Junit", "Postman", "Selenium", "Cypress", "Sql", "Git",
+        "Test Automation", "Jira"
+    ],
+    "Test Engineer": [
+        "Junit", "Postman", "Selenium", "Cypress", "Sql", "Git",
+        "Api Testing", "Jira"
+    ],
+    "Systems Engineer": [
+        "Aws", "Azure", "Docker", "Git", "Sql", "Linux"
+    ],
+    "System Administrator": [
+        "Aws", "Azure", "Git", "Sql", "Linux", "Bash"
+    ],
+    "Database Administrator": [
+        "Sql", "Mysql", "Postgresql", "Oracle", "Oracle Sql", "Mongodb",
+        "Data Modeling"
+    ],
+    "Research Scientist": [
+        "Python", "Machine Learning", "Statistics", "Nlp", "Deep Learning"
+    ],
+    "Research Assistant": [
+        "Python", "Statistics", "Data Cleaning"
+    ],
+    "Consultant": [
+        "Excel", "Sql", "Statistics", "Power Bi", "Communication"
+    ],
+    "Analyst": [
+        "Sql", "Excel", "Statistics", "Data Cleaning"
+    ],
+    "Ui/Ux Designer": [
+        "Figma", "Adobe Xd", "Ui/Ux", "Responsive Design", "Html", "Css"
+    ],
+    "Blockchain Developer": [
+        "Solidity", "Web3", "Blockchain", "Javascript", "Cryptography"
+    ],
+    "Cybersecurity Analyst": [
+        "Cybersecurity", "Penetration Testing", "Ethical Hacking", "Linux",
+        "Networking"
+    ],
+}
+
+SKILL_SUGGESTIONS = {
+    "Java": "Learn Java syntax, collections, exception handling and multithreading.",
+    "Oop": "Practice inheritance, polymorphism, abstraction and encapsulation.",
+    "Spring Boot": "Build REST APIs using Spring Boot.",
+    "Spring": "Learn the Spring Framework fundamentals.",
+    "Hibernate": "Learn Hibernate/JPA for ORM-based database integration.",
+    "Jpa": "Learn the Java Persistence API for ORM mapping.",
+    "Maven": "Learn Maven dependency management and build lifecycle.",
+    "Gradle": "Learn Gradle build scripts and dependency management.",
+    "Sql": "Practice joins, subqueries, normalization and database design.",
+    "Git": "Practice Git branching, merging and collaborative workflows.",
+    "Rest Api": "Build and consume REST APIs.",
+    "Graphql": "Learn to design and query GraphQL APIs.",
+    "Python": "Strengthen Python programming and advanced concepts.",
+    "Html": "Practice semantic HTML and accessibility.",
+    "Css": "Learn Flexbox, Grid and responsive layouts.",
+    "Tailwind Css": "Practice building layouts with Tailwind's utility classes.",
+    "Bootstrap": "Practice responsive layouts using Bootstrap components.",
+    "Javascript": "Strengthen ES6+, DOM manipulation and asynchronous JavaScript.",
+    "Typescript": "Learn static typing, interfaces and generics in TypeScript.",
+    "React": "Build React applications using components and hooks.",
+    "Node.Js": "Build backend services and APIs with Node.js.",
+    "Angular": "Learn Angular components, services and routing.",
+    "Vue": "Practice building small apps with Vue.js.",
+    "Flask": "Build lightweight REST APIs using Flask.",
+    "Fastapi": "Build production-ready REST APIs using FastAPI.",
+    "Django": "Create a complete web application using Django.",
+    "Pytest": "Practice writing test suites with pytest.",
+    "Docker": "Learn containerization and Docker deployment.",
+    "Kubernetes": "Learn container orchestration basics.",
+    "Terraform": "Practice infrastructure-as-code with Terraform.",
+    "Ansible": "Learn configuration management and automation with Ansible.",
+    "Jenkins": "Set up CI/CD pipelines using Jenkins.",
+    "Ci/Cd": "Learn to build automated CI/CD pipelines.",
+    "Linux": "Get comfortable with the Linux command line and shell.",
+    "Bash": "Practice writing shell scripts in Bash.",
+    "Mongodb": "Practice CRUD operations and schema design in MongoDB.",
+    "Mysql": "Practice SQL queries, joins and indexing in MySQL.",
+    "Postgresql": "Practice SQL queries and schema design in PostgreSQL.",
+    "Oracle": "Learn Oracle database fundamentals.",
+    "Oracle Sql": "Practice PL/SQL and Oracle-specific SQL features.",
+    "Data Modeling": "Practice designing normalized, scalable data models.",
+    "Microservices": "Learn to design and deploy microservice architectures.",
+    "Machine Learning": "Practice supervised and unsupervised ML projects.",
+    "Deep Learning": "Learn neural networks using TensorFlow or PyTorch.",
+    "Tensorflow": "Build and train deep learning models with TensorFlow.",
+    "Pytorch": "Build and train deep learning models with PyTorch.",
+    "Keras": "Practice model-building with the Keras API.",
+    "Mlflow": "Track experiments and manage ML models with MLflow.",
+    "Pandas": "Practice data wrangling and cleaning with Pandas.",
+    "Numpy": "Get comfortable with array operations in NumPy.",
+    "Scikit-Learn": "Practice building ML pipelines with scikit-learn.",
+    "Statistics": "Review descriptive statistics and probability.",
+    "Probability": "Review probability theory fundamentals.",
+    "Matplotlib": "Practice data visualization with Matplotlib.",
+    "Plotly": "Build interactive visualizations with Plotly.",
+    "Nlp": "Learn text preprocessing and NLP model basics.",
+    "Opencv": "Practice image processing with OpenCV.",
+    "Transformers": "Learn transformer architectures for NLP/vision tasks.",
+    "Llm": "Explore prompting and fine-tuning large language models.",
+    "Spark": "Learn distributed data processing with Apache Spark.",
+    "Airflow": "Practice orchestrating data pipelines with Airflow.",
+    "Etl": "Practice building extract-transform-load data pipelines.",
+    "C++": "Strengthen core C++ syntax and STL usage.",
+    "Data Structures": "Practice arrays, trees, graphs, and linked lists.",
+    "Algorithms": "Practice sorting, searching, and complexity analysis.",
+    "System Design": "Practice designing scalable backend systems.",
+    "Design Patterns": "Learn common OOP design patterns and when to use them.",
+    "Excel": "Practice formulas, pivot tables, and VLOOKUP.",
+    "Power Bi": "Build interactive dashboards in Power BI.",
+    "Tableau": "Practice building visualizations in Tableau.",
+    "Data Cleaning": "Practice handling missing/inconsistent data.",
+    "Dax": "Learn DAX formulas for Power BI measures.",
+    "Power Query": "Practice data transformation with Power Query.",
+    "Agile": "Learn Agile principles and iterative development.",
+    "Scrum": "Understand Scrum roles, ceremonies and artifacts.",
+    "Jira": "Practice sprint planning and issue tracking using Jira.",
+    "Sdlc": "Review the software development lifecycle stages.",
+    "Project Management": "Practice planning, scheduling and tracking projects.",
+    "Communication": "Practice clear written and verbal communication with stakeholders.",
+    "Leadership": "Develop decision-making and team-leading skills.",
+    "Aws": "Get familiar with core AWS services (EC2, S3, IAM).",
+    "Azure": "Get familiar with core Azure services.",
+    "Gcp": "Get familiar with core Google Cloud Platform services.",
+    "Junit": "Practice writing unit tests with JUnit.",
+    "Postman": "Practice testing APIs with Postman.",
+    "Selenium": "Practice browser automation and UI testing with Selenium.",
+    "Cypress": "Practice end-to-end testing with Cypress.",
+    "Test Automation": "Build automated test suites for regression coverage.",
+    "Api Testing": "Practice validating REST APIs with tools like Postman.",
+    "Kotlin": "Learn Kotlin fundamentals for Android development.",
+    "Swift": "Learn Swift fundamentals for iOS development.",
+    "Flutter": "Build cross-platform mobile apps with Flutter.",
+    "React Native": "Build cross-platform mobile apps with React Native.",
+    "Android": "Learn Android app development fundamentals.",
+    "Ios": "Learn iOS app development fundamentals.",
+    "Responsive Design": "Practice building mobile-first, responsive layouts.",
+    "Figma": "Practice designing UI mockups and prototypes in Figma.",
+    "Adobe Xd": "Practice designing UI mockups and prototypes in Adobe XD.",
+    "Ui/Ux": "Study usability principles and user-centered design.",
+    "Solidity": "Learn smart contract development with Solidity.",
+    "Web3": "Explore decentralized app development fundamentals.",
+    "Blockchain": "Learn blockchain fundamentals and consensus mechanisms.",
+    "Cryptography": "Review core cryptographic principles and algorithms.",
+    "Cybersecurity": "Study core security principles and common attack vectors.",
+    "Penetration Testing": "Practice ethical penetration testing techniques.",
+    "Ethical Hacking": "Learn ethical hacking methodologies and tools.",
+    "Networking": "Review core networking concepts (TCP/IP, DNS, firewalls).",
+    "Risk Management": "Learn how to identify, assess and mitigate project risks.",
+    "Stakeholder Management": "Practice aligning expectations across stakeholders and sponsors.",
+    "Waterfall": "Understand the Waterfall methodology and when to apply it.",
+    "Ms Project": "Practice scheduling and tracking projects in MS Project.",
+    "Microsoft Project": "Practice scheduling and tracking projects in Microsoft Project.",
+    "Team Management": "Practice delegating, motivating and coordinating a project team.",
+    "Conflict Resolution": "Develop techniques for resolving team and stakeholder conflicts.",
+    "Vendor Management": "Learn to manage vendor contracts, SLAs and deliverables.",
+    "Resource Allocation": "Practice planning and balancing team workload across tasks.",
+    "Budgeting": "Practice estimating and tracking project budgets.",
+    "Cost Management": "Learn to monitor and control project costs against budget.",
+    "Quality Management": "Learn quality assurance and control practices for projects.",
+    "Change Management": "Learn to manage scope changes and organizational change.",
+    "Sprint Planning": "Practice planning and estimating sprints in Agile teams.",
+    "User Stories": "Practice writing clear, testable user stories.",
+    "Roadmap Planning": "Practice building and prioritizing product/project roadmaps.",
+    "Product Roadmap": "Practice building and communicating a product roadmap.",
+    "Gantt Chart": "Practice building Gantt charts to visualize project timelines.",
+    "Okrs": "Learn to set and track Objectives and Key Results.",
+    "Requirements Gathering": "Practice eliciting and documenting stakeholder requirements.",
+    "Status Reporting": "Practice writing clear project status updates for stakeholders.",
+    "Trello": "Practice organizing tasks and workflows on Trello boards.",
+    "Confluence": "Practice documenting project plans and specs in Confluence.",
+}
 
 # ==========================================================
 # Extract Resume Text
@@ -645,6 +981,69 @@ def predict():
         return jsonify({"error": str(e)}), 500
 
 # ==========================================================
+# Skill Gap Report Endpoint
+# ==========================================================
+
+@app.route("/gap-report", methods=["POST"])
+def gap_report():
+    try:
+        data = request.get_json(force=True) or {}
+        role = data.get("job_role")
+        skills = data.get("skills", [])
+
+        required_skills = ROLE_SKILLS.get(role)
+        resolved_role = role
+
+        # FIX: the model can predict role names (e.g. "Full Stack Java
+        # Developer") that don't have an exact ROLE_SKILLS entry yet.
+        # Instead of hard-failing with 404, fall back to the closest
+        # known role name so the skill gap still renders. This also
+        # future-proofs against any new label_encoder classes added
+        # later without a matching ROLE_SKILLS key.
+        if required_skills is None and role:
+            close = difflib.get_close_matches(
+                role, ROLE_SKILLS.keys(), n=1, cutoff=0.55
+            )
+            if close:
+                resolved_role = close[0]
+                required_skills = ROLE_SKILLS[resolved_role]
+
+        if required_skills is None:
+            return jsonify({"error": f"No skill mapping found for '{role}'."}), 404
+
+        user_skills_normalized = {s.strip().lower() for s in skills}
+
+        matched_skills = [
+            s for s in required_skills if s.lower() in user_skills_normalized
+        ]
+        missing_skills = [
+            s for s in required_skills if s.lower() not in user_skills_normalized
+        ]
+
+        total = len(required_skills)
+        alignment = round(len(matched_skills) / total * 100, 2) if total else 0
+
+        suggestions = [
+            {
+                "skill": s,
+                "suggestion": SKILL_SUGGESTIONS.get(s, f"Improve your knowledge of {s}.")
+            }
+            for s in missing_skills
+        ]
+
+        return jsonify({
+            "job_role": role,
+            "your_skills": matched_skills,
+            "missing_skills": missing_skills,
+            "skill_alignment": alignment,
+            "suggestions": suggestions
+        })
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+# ==========================================================
 # Home Route
 # ==========================================================
 
@@ -667,6 +1066,11 @@ def health():
 # ==========================================================
 # Run Server
 # ==========================================================
+# FIX: this used to call uvicorn.run("api:app", ...), which launched a
+# completely different FastAPI app defined in api.py instead of this
+# Flask app — so every route above (including the correctly-implemented
+# file-upload /predict) was never actually served. Run this Flask app
+# directly instead.
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="127.0.0.1", port=8000, debug=True)

@@ -43,6 +43,8 @@
 
     --good:#3f6b52;
     --bad:#b5482f;
+    --bad-tint:rgba(181,72,47,.10);
+    --bad-tint-strong:rgba(181,72,47,.22);
 
     --font-display:'Fraunces', Georgia, serif;
     --font-body:'Public Sans', ui-sans-serif, system-ui, sans-serif;
@@ -345,6 +347,8 @@
   .chip-cyan{background:var(--trail-tint);border-color:var(--trail-tint-strong);color:var(--trail-deep);}
   .chip-green{background:var(--amber-tint);border-color:var(--amber-tint-strong);color:var(--amber-deep);}
   .chip-yellow{background:var(--slate-tint);border-color:var(--slate-tint-strong);color:var(--ink);}
+  .chip-matched{background:var(--trail-tint);border-color:var(--trail-tint-strong);color:var(--trail-deep);}
+  .chip-missing{background:var(--bad-tint);border-color:var(--bad-tint-strong);color:var(--bad);}
 
   /* profile summary panel */
   .summary-block{
@@ -388,8 +392,10 @@
     text-align:center;
     transition:.2s;
     position:relative;
+    cursor:pointer;
   }
   .job-card:hover{transform:translateY(-4px);box-shadow:0 16px 32px -14px rgba(11,21,38,.28);border-color:var(--amber-tint-strong);}
+  .job-card.selected{border:2px solid var(--amber);box-shadow:0 16px 32px -14px rgba(201,138,44,.35);}
   .medal{
     width:38px;height:38px;
     margin:0 auto 10px;
@@ -404,6 +410,7 @@
   }
   .job-card h3{margin:8px 0 10px;font-size:14px;font-weight:700;min-height:36px;color:var(--ink);}
   .job-card .big-pct{font-size:24px;font-weight:800;color:var(--amber-deep);margin-bottom:10px;font-family:var(--font-mono);}
+  .job-card .click-text{color:var(--slate-soft);font-size:11.5px;margin-top:10px;font-family:var(--font-mono);}
 
   /* summary metrics */
   .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:10px;}
@@ -433,6 +440,100 @@
   .tsne-legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:14px;font-size:12px;color:var(--slate);}
   .tsne-legend span{display:flex;align-items:center;gap:6px;}
   .tsne-legend i{width:10px;height:10px;border-radius:50%;display:inline-block;}
+
+  /* ---------- Skill Gap Analysis (new section) ---------- */
+  .gap-section{display:none;margin:0 0 40px;}
+  .gap-section.show{display:block;}
+  .gap-card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:28px 30px;
+  }
+  .gap-header{margin-bottom:22px;}
+  .gap-title{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:22px;
+    color:var(--ink);
+    margin:0 0 4px;
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  }
+  .gap-title .role-name{color:var(--amber-deep);}
+  .gap-subtitle{margin:0;font-size:13.5px;color:var(--slate);}
+  .gap-columns{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:26px;}
+  @media(max-width:760px){.gap-columns{grid-template-columns:1fr;}}
+  .gap-box{
+    background:var(--stone);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 20px;
+  }
+  .gap-box h4{
+    margin:0 0 12px;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    font-family:var(--font-mono);
+    color:var(--slate);
+  }
+  .gap-skill{
+    display:block;
+    padding:9px 12px;
+    margin:0 0 8px;
+    border-radius:8px;
+    font-size:13.5px;
+    font-weight:600;
+  }
+  .gap-skill:last-child{margin-bottom:0;}
+  .gap-skill.matched{background:var(--trail-tint);border:1px solid var(--trail-tint-strong);color:var(--trail-deep);}
+  .gap-skill.missing{background:var(--bad-tint);border:1px solid var(--bad-tint-strong);color:var(--bad);}
+
+  .gap-alignment{text-align:center;margin-bottom:26px;}
+  .gap-alignment .align-label{
+    font-size:13px;font-weight:700;color:var(--slate);
+    text-transform:uppercase;letter-spacing:1px;
+    font-family:var(--font-mono);
+    margin-bottom:10px;
+  }
+  .gap-progress-track{
+    width:100%;height:14px;border-radius:20px;
+    background:var(--stone);border:1px solid var(--line);
+    overflow:hidden;
+  }
+  .gap-progress-fill{
+    height:100%;width:0%;border-radius:20px;
+    background:linear-gradient(90deg,var(--trail),var(--amber));
+    transition:width .6s ease;
+  }
+  .gap-align-value{
+    margin-top:10px;font-size:24px;font-weight:800;
+    color:var(--ink);font-family:var(--font-display);
+  }
+
+  .gap-suggestions h4{
+    margin:0 0 12px;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    font-family:var(--font-mono);
+    color:var(--slate);
+  }
+  .suggestion-item{
+    background:var(--amber-tint);
+    border-left:3px solid var(--amber);
+    padding:12px 16px;
+    margin:0 0 10px;
+    border-radius:8px;
+    font-size:13.5px;
+    color:var(--ink-soft);
+    line-height:1.55;
+  }
+  .suggestion-item:last-child{margin-bottom:0;}
+  .suggestion-item b{color:var(--ink);}
+  .gap-loading{font-size:13.5px;color:var(--slate);font-style:italic;padding:6px 0;}
 
   /* ---------- How it works — trail map ---------- */
   .howitworks{
@@ -583,8 +684,44 @@
 
   <div id="topSection" style="display:none;">
     <h3 class="top3-title">Top 5 Career Recommendations</h3>
-    <p class="top3-subtitle">Computed from your résumé skills match, ranked by confidence.</p>
+    <p class="top3-subtitle">Computed from your résumé skills match, ranked by confidence. Click a card to see your skill gap for that role.</p>
     <div class="top3-grid" id="top3Grid"></div>
+  </div>
+
+  <!-- ===== Skill Gap Analysis section (new) ===== -->
+  <div class="gap-section" id="gapSection">
+    <div class="gap-card">
+      <div class="gap-header">
+        <h3 class="gap-title">🎯 Skill Gap Analysis — <span class="role-name" id="selectedRole"></span></h3>
+        <p class="gap-subtitle">Your skills compared with the skills required for the selected career.</p>
+      </div>
+
+      <div id="gapLoading" class="gap-loading" style="display:none;">Charting the skill gap...</div>
+
+      <div id="gapBody" style="display:none;">
+        <div class="gap-columns">
+          <div class="gap-box">
+            <h4>🟢 Your Skills</h4>
+            <div id="yourSkills"></div>
+          </div>
+          <div class="gap-box">
+            <h4>🔴 Missing Skills</h4>
+            <div id="missingSkills"></div>
+          </div>
+        </div>
+
+        <div class="gap-alignment">
+          <div class="align-label">📊 Skill Alignment</div>
+          <div class="gap-progress-track"><div class="gap-progress-fill" id="gapProgressBar"></div></div>
+          <div class="gap-align-value" id="gapAlignmentValue">0%</div>
+        </div>
+
+        <div class="gap-suggestions">
+          <h4>🚀 Recommended Improvements</h4>
+          <div id="suggestionList"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="analytics-grid" id="analyticsGrid">
@@ -641,7 +778,7 @@
       <div class="waypoint">
         <div class="pin">3</div>
         <h4>Discover</h4>
-        <p>Get your top 5 career matches, ranked with a confidence score.</p>
+        <p>Get your top 5 career matches, click any to see the skill gap, ranked with a confidence score.</p>
       </div>
     </div>
   </div>
@@ -656,9 +793,7 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
-//const API_URL = "http://127.0.0.1:5000";
-// const API_URL = "https://ai-powered-career-intelligence-platform-3.onrender.com";
-const API_URL = "http://127.0.0.1:5000";
+const API_URL = "http://127.0.0.1:8000";
 
 const resumeInput = document.getElementById("resumeInput");
 const fileMeta = document.getElementById("fileMeta");
@@ -680,9 +815,25 @@ const mSkills = document.getElementById("mSkills");
 const mJobs = document.getElementById("mJobs");
 const mHighest = document.getElementById("mHighest");
 
+// ---- Skill Gap Analysis elements (new) ----
+const gapSection = document.getElementById("gapSection");
+const gapLoading = document.getElementById("gapLoading");
+const gapBody = document.getElementById("gapBody");
+const selectedRole = document.getElementById("selectedRole");
+const yourSkillsEl = document.getElementById("yourSkills");
+const missingSkillsEl = document.getElementById("missingSkills");
+const gapProgressBar = document.getElementById("gapProgressBar");
+const gapAlignmentValue = document.getElementById("gapAlignmentValue");
+const suggestionList = document.getElementById("suggestionList");
+
 let selectedFile = null;
 let tsneChartInstance = null;
 let modelCompareChartInstance = null;
+
+// Track the skills extracted from the résumé so they can be sent to
+// /gap-report when a career card is clicked, and which role is selected.
+let currentSkills = [];
+let currentRole = null;
 
 // Distinct colors per embedding category — extend if your dataset has
 // more categories than this. "Your Resume" always renders last & bold.
@@ -723,6 +874,11 @@ analyzeBtn.addEventListener("click", async () => {
   analyzeBtn.disabled = true;
   statusMsg.className = "status-msg info";
   statusMsg.textContent = "🔍 Analyzing resume...";
+
+  // Reset any previous skill-gap view — it belongs to the last résumé.
+  gapSection.classList.remove("show");
+  gapBody.style.display = "none";
+  currentRole = null;
 
   try {
     // 1) Extract raw text client-side (for the highlighted preview panel)
@@ -787,6 +943,9 @@ function renderResults(result, rawText) {
   const modelComparison = result.model_comparison || {};
   const tsnePoints = result.tsne || [];
 
+  // Keep the résumé's skills around for the skill-gap lookups below.
+  currentSkills = skills;
+
   // ---- Resume text preview with 3-color highlighting, split into sections ----
   if (rawText) {
     const structuredText = insertSectionBreaks(rawText);
@@ -823,16 +982,26 @@ function renderResults(result, rawText) {
       </div>`;
   }
 
-  // ---- Top 5 waypoint cards ----
+  // ---- Top 5 waypoint cards (now clickable -> skill gap) ----
   top3Grid.innerHTML = "";
   for (let i = 0; i < top; i++) {
-    top3Grid.innerHTML += `
-      <div class="job-card">
-        <div class="medal">0${i + 1}</div>
-        <h3>${escapeHtml(recommendations[i])}</h3>
-        <div class="big-pct">${confidence[i]}%</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${confidence[i]}%"></div></div>
-      </div>`;
+    const role = recommendations[i];
+    const card = document.createElement("div");
+    card.className = "job-card";
+    card.innerHTML = `
+      <div class="medal">0${i + 1}</div>
+      <h3>${escapeHtml(role)}</h3>
+      <div class="big-pct">${confidence[i]}%</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${confidence[i]}%"></div></div>
+      <div class="click-text">Click to view skill gap</div>`;
+
+    card.addEventListener("click", () => {
+      document.querySelectorAll(".job-card").forEach(c => c.classList.remove("selected"));
+      card.classList.add("selected");
+      showSkillGap(role);
+    });
+
+    top3Grid.appendChild(card);
   }
 
   // ---- Summary metrics ----
@@ -848,6 +1017,80 @@ function renderResults(result, rawText) {
   topSection.style.display = "block";
   analyticsGrid.classList.add("show");
   summarySection.style.display = "block";
+}
+
+// ============================================================
+// SKILL GAP ANALYSIS (new — ported from the standalone gap-report UI)
+// ============================================================
+
+async function showSkillGap(role) {
+  currentRole = role;
+
+  selectedRole.textContent = role;
+  gapSection.classList.add("show");
+  gapBody.style.display = "none";
+  gapLoading.style.display = "block";
+
+  gapSection.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  try {
+    const response = await fetch(API_URL + "/gap-report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        job_role: role,
+        skills: currentSkills
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.detail || data.error || "Skill gap generation failed");
+    }
+
+    renderSkillGap(data);
+  } catch (err) {
+    gapLoading.style.display = "none";
+    gapBody.style.display = "block";
+    yourSkillsEl.innerHTML = '<span class="resume-empty">Could not load skill gap.</span>';
+    missingSkillsEl.innerHTML = `<span class="resume-empty">❌ ${escapeHtml(err.message)}</span>`;
+    gapProgressBar.style.width = "0%";
+    gapAlignmentValue.textContent = "0%";
+    suggestionList.innerHTML = "";
+  }
+}
+
+function renderSkillGap(data) {
+  gapLoading.style.display = "none";
+  gapBody.style.display = "block";
+
+  // ---- Your skills ----
+  const yourSkills = data.your_skills || [];
+  yourSkillsEl.innerHTML = yourSkills.length
+    ? yourSkills.map(s => `<span class="gap-skill matched">✓ ${escapeHtml(s)}</span>`).join("")
+    : '<span class="gap-skill matched">No matching skills found.</span>';
+
+  // ---- Missing skills ----
+  const missingSkills = data.missing_skills || [];
+  missingSkillsEl.innerHTML = missingSkills.length
+    ? missingSkills.map(s => `<span class="gap-skill missing">✗ ${escapeHtml(s)}</span>`).join("")
+    : '<span class="gap-skill matched">✓ No major skill gaps!</span>';
+
+  // ---- Alignment ----
+  const alignment = Number(data.skill_alignment) || 0;
+  gapProgressBar.style.width = alignment + "%";
+  gapAlignmentValue.textContent = "Skill Alignment: " + alignment.toFixed(2) + "%";
+
+  // ---- Suggestions ----
+  const suggestions = data.suggestions || [];
+  suggestionList.innerHTML = suggestions.length
+    ? suggestions.map(item => `
+        <div class="suggestion-item">
+          <b>${escapeHtml(item.skill)}</b><br>
+          💡 ${escapeHtml(item.suggestion)}
+        </div>`).join("")
+    : '<div class="suggestion-item">No specific suggestions — you\'re a strong match for this role.</div>';
 }
 
 function renderTsneChart(points) {
