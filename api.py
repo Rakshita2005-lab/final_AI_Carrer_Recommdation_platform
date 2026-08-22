@@ -1,178 +1,3 @@
-# # api.py
-
-# from fastapi import FastAPI, HTTPException
-# from pydantic import BaseModel
-# from typing import List
-
-# from skill_gap import (
-#     analyze_skill_gap,
-#     CAREER_SKILLS
-# )
-
-
-# app = FastAPI(
-#     title="AI Career Intelligence API",
-#     description="Career Prediction, Recommendation and Skill Gap Analysis",
-#     version="3.0.0"
-# )
-
-
-# # ============================================================
-# # REQUEST MODELS
-# # ============================================================
-
-# class SkillRequest(BaseModel):
-
-#     skills: List[str]
-
-
-# class RecommendationRequest(BaseModel):
-
-#     skills: List[str]
-
-
-# class SkillGapRequest(BaseModel):
-
-#     skills: List[str]
-
-#     target_role: str
-
-
-# # ============================================================
-# # HOME
-# # ============================================================
-
-# @app.get("/")
-# def home():
-
-#     return {
-
-#         "message":
-#             "AI Career Intelligence API",
-
-#         "version":
-#             "3.0.0",
-
-#         "status":
-#             "running"
-#     }
-
-
-# # ============================================================
-# # PREDICTION
-# # ============================================================
-
-# @app.post("/predict")
-# def predict(request: SkillRequest):
-
-#     if not request.skills:
-
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Skills list cannot be empty."
-#         )
-
-#     # --------------------------------------------------------
-#     # IMPORTANT:
-#     # Connect this section to your existing trained model.
-#     # --------------------------------------------------------
-
-#     return {
-
-#         "success": True,
-
-#         "prediction":
-#             "Machine Learning Engineer",
-
-#         "message":
-#             "Prediction endpoint is working."
-#     }
-
-
-# # ============================================================
-# # RECOMMENDATION
-# # ============================================================
-
-# @app.post("/recommend")
-# def recommend(
-#     request: RecommendationRequest
-# ):
-
-#     if not request.skills:
-
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Skills list cannot be empty."
-#         )
-
-#     # --------------------------------------------------------
-#     # Temporary recommendation structure.
-#     #
-#     # Later connect this to your Random Forest /
-#     # Logistic Regression model.
-#     # --------------------------------------------------------
-
-#     recommendations = []
-
-#     for role in CAREER_SKILLS:
-
-#         report = analyze_skill_gap(
-#             request.skills,
-#             role
-#         )
-
-#         recommendations.append({
-
-#             "role": role,
-
-#             "probability":
-#                 report["skill_alignment"]
-#         })
-
-#     recommendations.sort(
-#         key=lambda x: x["probability"],
-#         reverse=True
-#     )
-
-#     return {
-
-#         "success": True,
-
-#         "recommendations":
-#             recommendations
-#     }
-
-
-# # ============================================================
-# # SKILL GAP
-# # ============================================================
-
-# @app.post("/gap-report")
-# def gap_report(
-#     request: SkillGapRequest
-# ):
-
-#     if not request.skills:
-
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Skills list cannot be empty."
-#         )
-
-#     if request.target_role not in CAREER_SKILLS:
-
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Invalid target career."
-#         )
-
-#     result = analyze_skill_gap(
-#         request.skills,
-#         request.target_role
-#     )
-
-#     return result
-
 # api.py
 
 import io
@@ -206,21 +31,23 @@ INDEX_FILE = BASE_DIR / "index.html"
 app = FastAPI(
     title="AI-Powered Career Intelligence Platform",
     description="Career prediction, recommendation and skill gap analysis API",
-    version="1.1.0"
+    version="1.2.0"
 )
 
 
 # ============================================================
 # CORS
+# ------------------------------------------------------------
+# Opened up so the deployed frontend (hosted on Netlify/Render
+# static site/etc, not just localhost) can actually call this
+# API. Once you know your frontend's final URL, you can tighten
+# this back down to that origin instead of "*".
 # ============================================================
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://127.0.0.1:5500",
-        "http://localhost:5500"
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -284,91 +111,43 @@ label_encoder = load_model("label_encoder.pkl")
 ROLE_SKILLS = {
 
     "Full Stack Developer": [
-        "HTML",
-        "CSS",
-        "JavaScript",
-        "React",
-        "Python",
-        "SQL",
-        "REST API",
-        "Git"
+        "HTML", "CSS", "JavaScript", "React", "Python",
+        "SQL", "REST API", "Git"
     ],
 
     "Java Developer": [
-        "Java",
-        "OOP",
-        "SQL",
-        "Spring Boot",
-        "Hibernate",
-        "Maven",
-        "Git",
-        "REST API"
+        "Java", "OOP", "SQL", "Spring Boot", "Hibernate",
+        "Maven", "Git", "REST API"
     ],
 
     "Project Manager": [
-        "Project Management",
-        "Agile",
-        "Scrum",
-        "Jira",
-        "Communication",
-        "Leadership",
-        "Risk Management",
-        "Planning"
+        "Project Management", "Agile", "Scrum", "Jira",
+        "Communication", "Leadership", "Risk Management", "Planning"
     ],
 
     "Python Developer": [
-        "Python",
-        "OOP",
-        "SQL",
-        "Git",
-        "REST API",
-        "FastAPI",
-        "Django",
-        "Testing"
+        "Python", "OOP", "SQL", "Git", "REST API",
+        "FastAPI", "Django", "Testing"
     ],
 
     "Front End Web Developer": [
-        "HTML",
-        "CSS",
-        "JavaScript",
-        "React",
-        "Git",
-        "Responsive Design",
-        "REST API",
-        "TypeScript"
+        "HTML", "CSS", "JavaScript", "React", "Git",
+        "Responsive Design", "REST API", "TypeScript"
     ],
 
     "Backend Developer": [
-        "Python",
-        "Java",
-        "SQL",
-        "REST API",
-        "Git",
-        "Docker",
-        "API Development",
-        "Database"
+        "Python", "Java", "SQL", "REST API", "Git",
+        "Docker", "API Development", "Database"
     ],
 
     "Data Scientist": [
-        "Python",
-        "SQL",
-        "Machine Learning",
-        "Statistics",
-        "Pandas",
-        "NumPy",
-        "Scikit-learn",
-        "Data Visualization"
+        "Python", "SQL", "Machine Learning", "Statistics",
+        "Pandas", "NumPy", "Scikit-learn", "Data Visualization"
     ],
 
     "Machine Learning Engineer": [
-        "Python",
-        "Machine Learning",
-        "Deep Learning",
-        "TensorFlow",
-        "PyTorch",
-        "SQL",
-        "Docker",
-        "MLOps"
+        "Python", "Machine Learning", "Deep Learning", "TensorFlow",
+        "PyTorch", "SQL", "Docker", "MLOps"
     ]
 }
 
@@ -629,6 +408,34 @@ def generate_recommendations(text, top_k=5):
 
 
 # ============================================================
+# SUMMARY TEXT BUILDER
+# ------------------------------------------------------------
+# This backend doesn't extract "profile summary" or "education"
+# entities from the resume text, so we generate a short,
+# honest summary from what we DO have (skills + top prediction)
+# instead of fabricating fields the model never produced.
+# ============================================================
+
+def build_profile_summary(skills, recommendations):
+
+    if not skills:
+        return "Not available."
+
+    top_role = recommendations[0]["role"] if recommendations else None
+
+    skill_preview = ", ".join(skills[:6])
+    more = f" and {len(skills) - 6} more" if len(skills) > 6 else ""
+
+    if top_role:
+        return (
+            f"Detected {len(skills)} relevant skills ({skill_preview}{more}), "
+            f"most closely aligned with {top_role}."
+        )
+
+    return f"Detected {len(skills)} relevant skills ({skill_preview}{more})."
+
+
+# ============================================================
 # HOME PAGE
 # ============================================================
 
@@ -706,46 +513,27 @@ async def extract_resume_skills_from_file(file: UploadFile = File(...)):
 
 
 # ============================================================
-# PREDICT (from raw text - JSON)
+# PREDICT (PDF upload -> full result the frontend renders)
+# ------------------------------------------------------------
+# This is the endpoint the CareerCast frontend calls with
+# multipart/form-data field "resume". It returns:
+#   skills            -> list[str]
+#   recommendations   -> list[str]  (top 5 role names, ranked)
+#   confidence        -> list[float] (matching % per role, same order)
+#   summary           -> str  (short profile summary)
+#   education         -> str  ("Not available." - no extractor for this)
 # ============================================================
 
 @app.post("/predict")
-def predict(request: ResumeRequest):
+async def predict(resume: UploadFile = File(...)):
 
-    try:
-
-        recommendations = generate_recommendations(
-            request.text,
-            top_k=1
-        )
-
-        return {
-            "prediction": recommendations[0]["role"],
-            "probability": recommendations[0]["probability"]
-        }
-
-    except Exception as e:
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
-
-
-# ============================================================
-# PREDICT FROM FILE (PDF upload)
-# ============================================================
-
-@app.post("/predict-from-file")
-async def predict_from_file(file: UploadFile = File(...)):
-
-    if not file.filename.lower().endswith(".pdf"):
+    if not resume.filename.lower().endswith(".pdf"):
         raise HTTPException(
             status_code=400,
             detail="Only PDF files are supported."
         )
 
-    file_bytes = await file.read()
+    file_bytes = await resume.read()
 
     try:
         resume_text = extract_text_from_pdf(file_bytes)
@@ -759,23 +547,22 @@ async def predict_from_file(file: UploadFile = File(...)):
         )
 
     try:
-
-        recommendations = generate_recommendations(
-            resume_text,
-            top_k=1
-        )
-
-        return {
-            "prediction": recommendations[0]["role"],
-            "probability": recommendations[0]["probability"]
-        }
-
+        ranked = generate_recommendations(resume_text, top_k=5)
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+    skills = extract_skills(resume_text)
+
+    recommendations = [r["role"] for r in ranked]
+    confidence = [r["probability"] for r in ranked]
+
+    return {
+        "skills": skills,
+        "recommendations": recommendations,
+        "confidence": confidence,
+        "summary": build_profile_summary(skills, ranked),
+        "education": "Not available."
+    }
 
 
 # ============================================================
