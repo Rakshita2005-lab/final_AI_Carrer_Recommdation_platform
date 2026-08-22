@@ -1,3 +1,10 @@
+## 🌐 Live Demo
+
+🚀 **Frontend Application:**  
+[AI-Powered Career Intelligence Platform](https://final-ai-carrer-recommdation-platfo.vercel.app/)
+
+🔗 **Live URL:** https://final-ai-carrer-recommdation-platfo.vercel.app/
+
 # 🚀 Milestone 3 — Skill Gap Analysis, API & CI Integration
 
 In Milestone 3, the Career Intelligence Platform was extended from simple career prediction to a more complete **AI-powered career guidance system**.
