@@ -10,7 +10,7 @@ https://final-ai-carrer-recommdation-platfo.vercel.app/
 **GitHub Repository:**
 https://github.com/Rakshita2005-lab/final_AI_Carrer_Recommdation_platform
 
-## ✨ Features
+## Features
 
 * 📄 Resume text analysis
 * 🎯 Career role prediction
@@ -41,8 +41,6 @@ https://github.com/Rakshita2005-lab/final_AI_Carrer_Recommdation_platform
 | Random Forest       |  **96%** |
 | XGBoost             |      94% |
 
-🏆 **Best Model: Random Forest**
-
 ## ⚙️ How It Works
 
 ```text
@@ -57,7 +55,6 @@ Top Career Recommendations
 Skill Gap Analysis
      ↓
 Personalized Recommendations
-```
 
 ## 📂 Project Structure
 
