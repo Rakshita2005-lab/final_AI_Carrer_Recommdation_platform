@@ -78,8 +78,8 @@ pip install -r requirements.txt
 python app.py
 ```
 
-## 👩‍💻 Author
+##Author
 
-**Rakshita Handage**
+Rakshita Handage
 
 GitHub: https://github.com/Rakshita2005-lab
