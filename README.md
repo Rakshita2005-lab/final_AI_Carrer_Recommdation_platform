@@ -12,11 +12,11 @@ https://github.com/Rakshita2005-lab/final_AI_Carrer_Recommdation_platform
 
 ## Features
 
-* 📄 Resume text analysis
-* 🎯 Career role prediction
+* 📄 Resume test Analyses
+* 🎯 carrer Role prediction
 * 🏆 Top-K career recommendations
 * 📊 Prediction confidence scores
-* 🧠 Skill extraction
+* 🧠 Skill Analyses
 * ⚠️ Skill gap analysis
 * 💡 Personalized skill improvement suggestions
 * 🌐 Interactive web interface
