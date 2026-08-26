@@ -25,7 +25,7 @@ https://github.com/Rakshita2005-lab/final_AI_Carrer_Recommdation_platform
 
 **Machine Learning:** Scikit-learn, Random Forest, XGBoost, Logistic Regression
 
-**NLP & Processing:** TF-IDF, Skill Extraction, Sentence Embeddings
+**NLP & Processing:** TF-IDF,Skill Extraction, Skill Embeddings
 
 **Backend:** Flask, Flask-CORS
 
